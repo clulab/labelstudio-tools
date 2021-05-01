@@ -50,7 +50,7 @@
     <Relation value="Modifier"/>
     <Relation value="Every"/>
   </Relations>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Period">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Period">
     <Choices name="Period-type" toName="text" perRegion="true" required="true">
       <Choice value="Seconds"/>
       <Choice value="Minutes"/>
@@ -67,7 +67,7 @@
       <Choice value="Unknown"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Calendar-Interval">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Calendar-Interval">
     <Choices name="Calendar-Interval-type" toName="text" perRegion="true" required="true">
       <Choice value="Second"/>
       <Choice value="Minute"/>
@@ -83,10 +83,10 @@
       <Choice value="Millennium"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Quarter-Of-Year">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Quarter-Of-Year">
     <TextArea name="Quarter-Of-Year-value" perRegion="true"/>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Season-Of-Year">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Season-Of-Year">
     <Choices name="Season-Of-Year-type" toName="text" perRegion="true" required="true">
       <Choice value="Spring"/>
       <Choice value="Summer"/>
@@ -95,7 +95,7 @@
       <Choice value="Unknown"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Month-Of-Year">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Month-Of-Year">
     <Choices name="Month-Of-Year-type" toName="text" perRegion="true" required="true">
       <Choice value="January"/>
       <Choice value="February"/>
@@ -111,13 +111,13 @@
       <Choice value="December"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Week-Of-Year">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Week-Of-Year">
     <TextArea name="Week-Of-Year-value" perRegion="true"/>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Day-Of-Month">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Day-Of-Month">
     <TextArea name="Day-Of-Month-value" perRegion="true"/>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Day-Of-Week">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Day-Of-Week">
     <Choices name="Day-Of-Week-type" toName="text" perRegion="true" required="true">
       <Choice value="Monday"/>
       <Choice value="Tuesday"/>
@@ -128,13 +128,13 @@
       <Choice value="Sunday"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Part-Of-Week">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Part-Of-Week">
     <Choices name="Part-Of-Week-type" toName="text" perRegion="true" required="true">
       <Choice value="Weekdays"/>
       <Choice value="Weekend"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Part-Of-Day">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Part-Of-Day">
     <Choices name="Part-Of-Day-type" toName="text" perRegion="true" required="true">
       <Choice value="Dawn"/>
       <Choice value="Day"/>
@@ -148,28 +148,28 @@
       <Choice value="Unknown"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="AMPM-Of-Day">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="AMPM-Of-Day">
     <Choices name="AMPM-Of-Day-type" toName="text" perRegion="true" required="true">
       <Choice value="AM"/>
       <Choice value="PM"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Hour-Of-Day">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Hour-Of-Day">
     <TextArea name="Hour-Of-Day-value" perRegion="true"/>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Minute-Of-Hour">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Minute-Of-Hour">
     <TextArea name="Minute-Of-Hour-value" perRegion="true"/>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Second-Of-Minute">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Second-Of-Minute">
     <TextArea name="Second-Of-Minute-value" perRegion="true"/>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Year">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Year">
     <TextArea name="Year-value" perRegion="true"/>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Every-Nth">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Every-Nth">
     <TextArea name="Every-Nth-value" perRegion="true"/>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Two-Digit-Year">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Two-Digit-Year">
     <TextArea name="Two-Digit-Year-value" perRegion="true"/>
     <Choices name="Two-Digit-Year-Interval-Type" toName="text" perRegion="true" required="true">
       <Header name="text-Two-Digit-Year" value="Interval-Type:"/>
@@ -180,7 +180,7 @@
       <Choice value="Unknown"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="This">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="This">
     <Choices name="This-Interval-Type" toName="text" perRegion="true" required="true">
       <Header name="text-This" value="Interval-Type:"/>
       <Choice value="Link"/>
@@ -190,7 +190,7 @@
       <Choice value="Unknown"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Last">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Last">
     <Choices name="Last-Semantics" toName="text" perRegion="true" required="true">
       <Header name="text-Last-1" value="Semantics:"/>
       <Choice value="Interval-Not-Included"/>
@@ -205,7 +205,7 @@
       <Choice value="Unknown"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Next">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Next">
     <Choices name="Next-Semantics" toName="text" perRegion="true" required="true">
       <Header name="text-Next-1" value="Semantics:"/>
       <Choice value="Interval-Not-Included"/>
@@ -220,7 +220,7 @@
       <Choice value="Unknown"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Before">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Before">
     <Choices name="Before-Semantics" toName="text" perRegion="true" required="true">
       <Header name="text-Before-1" value="Semantics:"/>
       <Choice value="Interval-Not-Included"/>
@@ -235,7 +235,7 @@
       <Choice value="Unknown"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="After">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="After">
     <Choices name="After-Semantics" toName="text" perRegion="true" required="true">
       <Header name="text-After-1" value="Semantics:"/>
       <Choice value="Interval-Not-Included"/>
@@ -250,7 +250,7 @@
       <Choice value="Unknown"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Between">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Between">
     <Choices name="Start-Interval-Type" toName="text" perRegion="true" required="true">
       <Choice value="Link"/>
       <Choice value="DocTime"/>
@@ -274,7 +274,7 @@
       <Choice value="Included"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="NthFromStart">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="NthFromStart">
     <TextArea name="NthFromStart-value" perRegion="true"/>
     <Choices name="NthFromStart-Interval-Type" toName="text" perRegion="true" required="true">
       <Header name="text-NthFromStart" value="Interval-Type:"/>
@@ -285,7 +285,7 @@
       <Choice value="Unknown"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="NthFromEnd">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="NthFromEnd">
     <TextArea name="NthFromEnd-value" perRegion="true"/>
     <Choices name="NthFromEnd-Interval-Type" toName="text" perRegion="true" required="true">
       <Header name="text-NthFromEnd" value="Interval-Type:"/>
@@ -296,10 +296,10 @@
       <Choice value="Unknown"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Number">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Number">
     <TextArea name="Number-value" perRegion="true"/>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Modifier">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Modifier">
     <Choices name="Modifier-type" toName="text" perRegion="true" required="true">
       <Choice value="Approx"/>
       <Choice value="Less-Than"/>
@@ -310,7 +310,7 @@
       <Choice value="Fiscal"/>
     </Choices>
   </View>
-  <View visibleWhen="choice-selected" whenTagName="type" whenChoiceValue="Frequency">
+  <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Frequency">
     <Choices name="Frequency-type" toName="text" perRegion="true" required="true">
       <Choice value="Second"/>
       <Choice value="Minute"/>
