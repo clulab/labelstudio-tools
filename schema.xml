@@ -46,6 +46,7 @@
     <Relation value="AMPM-Of-Day"/>
     <Relation value="Time-Zone"/>
     <Relation value="Period"/>
+    <Relation value="Periods"/>
     <Relation value="Number"/>
     <Relation value="Modifier"/>
     <Relation value="Every"/>
@@ -251,25 +252,25 @@
     </Choices>
   </View>
   <View visibleWhen="region-selected" whenTagName="type" whenLabelValue="Between">
-    <Choices name="Start-Interval-Type" toName="text" perRegion="true" required="true">
+    <Choices name="Between-Start-Interval-Type" toName="text" perRegion="true" required="true">
       <Choice value="Link"/>
       <Choice value="DocTime"/>
       <Choice value="DocTime-Era"/>
       <Choice value="DocTime-Year"/>
       <Choice value="Unknown"/>
     </Choices>
-    <Choices name="Start-Included" toName="text" perRegion="true" required="true">
+    <Choices name="Between-Start-Included" toName="text" perRegion="true" required="true">
       <Choice value="Not-Included"/>
       <Choice value="Included"/>
     </Choices>
-    <Choices name="End-Interval-Type" toName="text" perRegion="true" required="true">
+    <Choices name="Between-End-Interval-Type" toName="text" perRegion="true" required="true">
       <Choice value="Link"/>
       <Choice value="DocTime"/>
       <Choice value="DocTime-Era"/>
       <Choice value="DocTime-Year"/>
       <Choice value="Unknown"/>
     </Choices>
-    <Choices name="End-Included" toName="text" perRegion="true" required="true">
+    <Choices name="Between-End-Included" toName="text" perRegion="true" required="true">
       <Choice value="Not-Included"/>
       <Choice value="Included"/>
     </Choices>
