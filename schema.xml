@@ -39,10 +39,13 @@
   </Labels>
   <Relations>
     <Relation value="Sub-Interval"/>
+    <Relation value="Super-Interval"/>
     <Relation value="Interval"/>
+    <Relation value="Intervals"/>
     <Relation value="Start-Interval"/>
     <Relation value="End-Interval"/>
     <Relation value="Repeating-Interval"/>
+    <Relation value="Repeating-Intervals"/>
     <Relation value="AMPM-Of-Day"/>
     <Relation value="Time-Zone"/>
     <Relation value="Period"/>
