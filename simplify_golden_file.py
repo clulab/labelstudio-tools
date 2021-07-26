@@ -1,30 +1,35 @@
 
 import argparse
-from xml.etree import ElementTree
+import xml.etree.ElementTree as et
 
 
 def remove_some_elements(input_path, output_path):
     file = open(input_path, "r")
-    elem = ElementTree.parse(file)
+    elem = et.parse(file)
     root = elem.getroot()
+
     for ele in list(root):
         if ele.tag != "annotations":
             root.remove(ele)
 
+    annotations = root.find(".//annotations")
+    if len(annotations) == 0:
+        root.remove(annotations)
+
     entities = root.findall(".//entity")
     for entity in entities:
-        if entity[2].text == "Event" or entity[2].text == "Time-Zone" \
-                or entity[2].text == "PreAnnotation" or entity[2].text == "NotNormalizable":
-            entity.remove(entity.find(".//properties"))
         for att in entity:
-            if att.tag != "id" and att.tag != "span" and att.tag != "type" and att.tag != "properties":
+            if att.tag != "id" and att.tag != "span" and att.tag != "type":
                 entity.remove(att)
-
-    properties = root.findall(".//properties")
-    for prop in list(properties):
-        for pp in list(prop):
-            if not pp.text:
-                prop.remove(pp)
+        properties_xml = entity.find(".//properties")
+        to_remove = []
+        for child in properties_xml:
+            if child.text is None or not child.text.strip():
+                to_remove.append(child)
+        for child in to_remove:
+            properties_xml.remove(child)
+        if len(properties_xml) == 0:
+            entity.remove(properties_xml)
 
     elem.write(output_path, encoding="UTF-8", xml_declaration=True)
     return
@@ -37,5 +42,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     remove_some_elements(**vars(args))
-
-
