@@ -27,12 +27,10 @@ def parse_element(data: anafora.AnaforaData, set_to_super_interval=False):
                 elif prop_name == "Value":
                     data_file.append({"value": {"start": start, "end": end, "text": [ann.properties["Value"]]},
                             "id": ann.id, "from_name": ann.type + "-value", "to_name": "text", "type": "textarea"})
-
                 elif prop_name == "Periods" or prop_name == "Repeating-Intervals" \
                         or prop_name == "Intervals" or prop_name == "Sub-Interval":
                     duplicate_relations = ann.properties.xml.findall("./" + prop_name)
                     #links = [data.annotations.select_id(relation.text) for relation in duplicate_relations]
-
                     links = []
                     for relation in duplicate_relations:
                         try:
@@ -73,7 +71,10 @@ def sub_to_super(json_list: list):
 
 def comp_id(sub_elem):
     if sub_elem["type"] != "relation":
-        return int(sub_elem["id"].split("@")[0])
+        if sub_elem["id"].split("@")[0].endswith("_continued"):
+            return int(sub_elem["id"].split("@")[0].rstrip("_continued"))
+        else:
+            return int(sub_elem["id"].split("@")[0])
     elif sub_elem["labels"][0] == "Super-Interval":
         return int(sub_elem["from_id"].split("@")[0])+0.5
     else:
@@ -85,3 +86,4 @@ if __name__ == "__main__":
         data = anafora.AnaforaData.from_file(sys.argv[1])
         json.dump(list(parse_element(data)), json_file, indent=4)
         json_file.close()
+        
