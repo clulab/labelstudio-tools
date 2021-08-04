@@ -16,8 +16,7 @@ def xml_json_xml(input_dir, output_dir, set_to_super_interval):
             output_parent = os.path.join(output_dir, sub_dir)
             if not os.path.exists(output_parent):
                 os.makedirs(output_parent)
-            xml_test_name = "TimeNorm.test.xml"
-            data.to_file(os.path.join(output_parent, xml_test_name))
+            data.to_file(os.path.join(output_parent, xml_file_name))
 
 
 if __name__ == "__main__":
