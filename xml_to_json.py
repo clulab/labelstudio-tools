@@ -4,6 +4,10 @@ import sys
 
 
 def parse_element(data: anafora.AnaforaData, set_to_super_interval=False):
+
+    if set_to_super_interval:
+        data = check_year_of_sub_interval(data)
+        
     data_file = []
     for ann in data.annotations:
 
@@ -79,6 +83,36 @@ def comp_id(sub_elem):
         return int(sub_elem["from_id"].split("@")[0])+0.5
     else:
         return int(sub_elem["from_id"].split("@")[0])
+
+
+def check_year_of_sub_interval(data):
+    for ann in data.annotations:
+        for prop_name in ann.properties:
+            if ann.properties[prop_name] is not None:
+                if prop_name == "Type" or prop_name == "Value" or prop_name == "Sub-Interval" \
+                        or prop_name.endswith("Interval-Type") or prop_name == "Semantics" or prop_name.endswith("Included"):
+                    continue
+                elif prop_name == "Periods" or prop_name == "Repeating-Intervals" or prop_name == "Intervals":
+                    duplicate_relations = ann.properties.xml.findall("./" + prop_name)
+                    for relation in duplicate_relations:
+                        link = data.annotations.select_id(relation.text)
+                        if link.id != find_sub_root_entity(link).id:
+                            smallest_unit = find_sub_root_entity(link)
+                            relation.text = smallest_unit.id
+                else:
+                    smallest_unit = find_sub_root_entity(ann.properties[prop_name])
+                    ann.properties[prop_name] = smallest_unit
+    return data
+
+
+def find_sub_root_entity(biggest_entity):
+    root_entity = biggest_entity
+    while root_entity is not None:
+        if 'Sub-Interval' not in root_entity.properties or not root_entity.properties["Sub-Interval"]:
+            break
+        else:
+            root_entity = root_entity.properties["Sub-Interval"]
+    return root_entity
 
 
 if __name__ == "__main__":
