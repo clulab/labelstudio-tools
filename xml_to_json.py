@@ -4,6 +4,7 @@ import sys
 
 
 def parse_element(data: anafora.AnaforaData, set_to_super_interval=False):
+    clean_bad_links(data)
 
     if set_to_super_interval:
         data = check_year_of_sub_interval(data)
@@ -37,10 +38,7 @@ def parse_element(data: anafora.AnaforaData, set_to_super_interval=False):
                     #links = [data.annotations.select_id(relation.text) for relation in duplicate_relations]
                     links = []
                     for relation in duplicate_relations:
-                        try:
-                            links.append(data.annotations.select_id(relation.text))
-                        except KeyError:
-                            print(f"entity_id, prop_name :{ann.id, prop_name}")
+                        links.append(data.annotations.select_id(relation.text))
 
                     for link in links:
                         data_file.append({"from_id": ann.id, "to_id": link.id, "type": "relation", "labels": [prop_name]})
@@ -50,9 +48,6 @@ def parse_element(data: anafora.AnaforaData, set_to_super_interval=False):
                             "id": ann.id, "from_name": ann.type + "-" + prop_name, "to_name": "text", "type": "choices"})
 
                 else:
-                    if type(ann.properties[prop_name]) == str:
-                        print(f"entity_id, prop_name :{ann.id, prop_name}")
-                        continue
                     data_file.append({"from_id": ann.id, "to_id": ann.properties[prop_name].id, "type": "relation", "labels": [prop_name]})
 
     if set_to_super_interval:
@@ -113,6 +108,17 @@ def find_sub_root_entity(biggest_entity):
         else:
             root_entity = root_entity.properties["Sub-Interval"]
     return root_entity
+
+
+def clean_bad_links(data: anafora.AnaforaData):
+    for annotation in data.annotations:
+        invalid = []
+        for key, value in annotation.properties.items():
+            if isinstance(value, str) and '@' in value:
+                invalid.append((key, value))
+        for key, value in invalid:
+            print(f'Removing invalid link: {annotation.id}/{key}={value}')
+            del annotation.properties[key]
 
 
 if __name__ == "__main__":
