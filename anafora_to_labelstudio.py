@@ -6,6 +6,7 @@ import xml.etree.cElementTree as ET
 def anafora_schema_to_labelstudio_schema(anafora_path, labelstudio_path):
     ls_view_elem = ET.Element('View')
     ls_tree = ET.ElementTree(ls_view_elem)
+    ET.SubElement(ls_view_elem, 'Text', dict(name="text", value="$text"))
     ls_labels_elem = ET.SubElement(
         ls_view_elem, 'Labels', dict(name="type", toName="text"))
     ls_relations_elem = ET.SubElement(ls_view_elem, 'Relations')
