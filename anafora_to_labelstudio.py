@@ -9,6 +9,7 @@ def anafora_schema_to_labelstudio_schema(anafora_path, labelstudio_path):
     ls_labels_elem = ET.SubElement(
         ls_view_elem, 'Labels', dict(name="type", toName="text"))
     ls_relations_elem = ET.SubElement(ls_view_elem, 'Relations')
+    relation_types = set()
 
     an_tree = ET.parse(anafora_path)
     an_root = an_tree.getroot()
@@ -61,7 +62,11 @@ def anafora_schema_to_labelstudio_schema(anafora_path, labelstudio_path):
                             value=choice))
 
             elif property_input == "list":
-                pass
+                if property_type not in relation_types:
+                    ET.SubElement(ls_relations_elem, 'Relation', dict(
+                        value=property_type))
+                    relation_types.add(property_type)
+
             else:
                 raise ValueError(f'unexpected input_type: {property_input}')
 
