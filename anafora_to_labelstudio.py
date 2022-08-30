@@ -59,8 +59,11 @@ def anafora_schema_to_labelstudio_schema(anafora_path, labelstudio_path):
                 if property_input == "text":
                     ls_prop_elem = ET.SubElement(
                         ls_attrib_view_elem, 'View', ls_prop_attrib)
+                    ET.SubElement(ls_prop_elem, 'Header', dict(
+                        value=f"{property_type}:"))
                     ls_text_area_attrib = dict(
                         name=f"{entity_type}-{property_type}",
+                        toName="text",
                         perRegion="true")
                     if property_required:
                         ls_text_area_attrib["required"] = "true"
