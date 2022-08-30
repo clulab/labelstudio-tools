@@ -71,7 +71,10 @@ def anafora_schema_to_labelstudio_schema(anafora_path, labelstudio_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("anafora_path", metavar="anafora_xml")
-    parser.add_argument("labelstudio_path", metavar="labelstudio_xml")
-    args = parser.parse_args()
-    anafora_schema_to_labelstudio_schema(**vars(args))
+    subparsers = parser.add_subparsers()
+    schema_parser = subparsers.add_parser("schema")
+    schema_parser.set_defaults(func=anafora_schema_to_labelstudio_schema)
+    schema_parser.add_argument("anafora_path", metavar="anafora_xml")
+    schema_parser.add_argument("labelstudio_path", metavar="labelstudio_xml")
+    kwargs = vars(parser.parse_args())
+    kwargs.pop("func")(**kwargs)
