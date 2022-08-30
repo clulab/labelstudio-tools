@@ -4,17 +4,25 @@ import xml.etree.cElementTree as ET
 
 
 def anafora_schema_to_labelstudio_schema(anafora_path, labelstudio_path):
+    # the overall view
     ls_view_elem = ET.Element('View', dict(style="display: flex;"))
-    ls_tree = ET.ElementTree(ls_view_elem)
-    ls_text_view_elem = ET.SubElement(ls_view_elem, 'View', dict(
-        style="flex: 75%"))
-    ET.SubElement(ls_text_view_elem, 'Text', dict(name="text", value="$text"))
+
+    # the view of the label choices
     ls_labels_view_elem = ET.SubElement(ls_view_elem, 'View', dict(
-        style="flex: 25%"))
+        style="flex: 20%"))
     ls_labels_elem = ET.SubElement(ls_labels_view_elem, 'Labels', dict(
         name="type", toName="text", showInline="false"))
     ls_relations_elem = ET.SubElement(ls_labels_view_elem, 'Relations')
     relation_types = set()
+
+    # the view of the text
+    ls_text_view_elem = ET.SubElement(ls_view_elem, 'View', dict(
+        style="flex: 60%"))
+    ET.SubElement(ls_text_view_elem, 'Text', dict(name="text", value="$text"))
+
+    # the view of the attribute choices
+    ls_attrib_view_elem = ET.SubElement(ls_view_elem, 'View', dict(
+        style="flex: 20%"))
 
     an_tree = ET.parse(anafora_path)
     an_root = an_tree.getroot()
@@ -50,7 +58,7 @@ def anafora_schema_to_labelstudio_schema(anafora_path, labelstudio_path):
 
                 if property_input == "text":
                     ls_prop_elem = ET.SubElement(
-                        ls_view_elem, 'View', ls_prop_attrib)
+                        ls_attrib_view_elem, 'View', ls_prop_attrib)
                     ls_text_area_attrib = dict(
                         name=f"{entity_type}-{property_type}",
                         perRegion="true")
@@ -60,7 +68,7 @@ def anafora_schema_to_labelstudio_schema(anafora_path, labelstudio_path):
 
                 elif property_input == "choice":
                     ls_prop_elem = ET.SubElement(
-                        ls_view_elem, 'View', ls_prop_attrib)
+                        ls_attrib_view_elem, 'View', ls_prop_attrib)
                     ls_choices_attrib = dict(
                         name=f"{entity_type}-{property_type}",
                         toName="text",
@@ -85,6 +93,7 @@ def anafora_schema_to_labelstudio_schema(anafora_path, labelstudio_path):
                 else:
                     raise ValueError(f'unexpected input_type: {property_input}')
 
+    ls_tree = ET.ElementTree(ls_view_elem)
     ET.indent(ls_tree, space="  ", level=0)
     ls_tree.write(labelstudio_path)
 
