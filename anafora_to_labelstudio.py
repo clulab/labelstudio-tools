@@ -31,7 +31,14 @@ def anafora_schema_to_labelstudio_schema(anafora_path, labelstudio_path):
         ET.SubElement(ls_labels_elem, 'Header', dict(value=f"{entities_type}:"))
         for an_entity_elem in an_entities_elem.iter('entity'):
             entity_type = an_entity_elem.attrib["type"]
-            ET.SubElement(ls_labels_elem, 'Label', dict(value=entity_type))
+            ls_label_attrib = dict(value=entity_type)
+            hotkey = an_entity_elem.attrib.get("hotkey")
+            if hotkey is not None:
+                ls_label_attrib["hotkey"] = hotkey
+            color = an_entity_elem.attrib.get("color")
+            if color is not None:
+                ls_label_attrib["background"] = f"#{color}"
+            ET.SubElement(ls_labels_elem, 'Label', ls_label_attrib)
             for an_property_elem in an_entity_elem.iter('property'):
                 property_type = an_property_elem.attrib["type"]
                 property_input = an_property_elem.attrib["input"]
