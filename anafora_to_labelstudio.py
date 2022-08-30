@@ -4,12 +4,16 @@ import xml.etree.cElementTree as ET
 
 
 def anafora_schema_to_labelstudio_schema(anafora_path, labelstudio_path):
-    ls_view_elem = ET.Element('View')
+    ls_view_elem = ET.Element('View', dict(style="display: flex;"))
     ls_tree = ET.ElementTree(ls_view_elem)
-    ET.SubElement(ls_view_elem, 'Text', dict(name="text", value="$text"))
+    ls_text_view_elem = ET.SubElement(ls_view_elem, 'View', dict(
+        style="flex: 75%"))
+    ET.SubElement(ls_text_view_elem, 'Text', dict(name="text", value="$text"))
+    ls_labels_view_elem = ET.SubElement(ls_view_elem, 'View', dict(
+        style="flex: 25%"))
     ls_labels_elem = ET.SubElement(
-        ls_view_elem, 'Labels', dict(name="type", toName="text"))
-    ls_relations_elem = ET.SubElement(ls_view_elem, 'Relations')
+        ls_labels_view_elem, 'Labels', dict(name="type", toName="text"))
+    ls_relations_elem = ET.SubElement(ls_labels_view_elem, 'Relations')
     relation_types = set()
 
     an_tree = ET.parse(anafora_path)
