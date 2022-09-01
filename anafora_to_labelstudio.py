@@ -11,9 +11,9 @@ def anafora_to_labelstudio(
         anafora_path: Text,
         labelstudio_path: Text,
         annotator: Text,
-        status: Text):
+        status: Text,
+        project: Text):
 
-    ls_data = []
     an_setting_tree = ET.parse(os.path.join(anafora_path, ".setting.xml"))
     an_setting_root = an_setting_tree.getroot()
     for an_schema_elem in an_setting_root.findall("./schemas/schema"):
@@ -33,30 +33,29 @@ def anafora_to_labelstudio(
             if os.path.exists(an_schema_path):
                 ls_tree, ls_property_types = anafora_schema_to_labelstudio_schema(
                     anafora_path=an_schema_path,
-                    labelstudio_path=f"{labelstudio_path}.{an_schema_name}.xml",
                 )
                 ET.indent(ls_tree, space="  ", level=0)
-                ls_tree.write(labelstudio_path)
+                ls_tree.write(f"{labelstudio_path}.{an_schema_name}.schema.xml")
 
+                ls_data = []
                 an_filename_matcher = re.compile(
                     f".*[.]{an_schema_name}[.]{annotator}[.]{status}[.]xml")
                 for dirpath, dirnames, filenames in os.walk(anafora_path):
-                    for filename in filenames:
-                        if an_filename_matcher.match(filename):
-                            print(filename)
-                            ls_data.append(anafora_annotations_to_labelstudio_annotations(
-                                anafora_path=os.path.join(anafora_path, dirpath, filename),
-                                labelstudio_path=f"{labelstudio_path}.data.json",
-                                labelstudio_property_types=ls_property_types,
-                            ))
+                    if project is None or project in dirpath:
+                        for filename in filenames:
+                            if an_filename_matcher.match(filename):
+                                print(filename)
+                                ls_data.append(anafora_annotations_to_labelstudio_annotations(
+                                    anafora_path=os.path.join(anafora_path, dirpath, filename),
+                                    labelstudio_property_types=ls_property_types,
+                                ))
 
-    with open(labelstudio_path, 'w') as labelstudio_file:
-        json.dump(ls_data, labelstudio_file, indent=4)
+                with open(f"{labelstudio_path}.{an_schema_name}.data.json", 'w') as labelstudio_file:
+                    json.dump(ls_data, labelstudio_file, indent=4)
 
 
 def anafora_schema_to_labelstudio_schema(
-        anafora_path: Text,
-        labelstudio_path: Text) -> tuple[ET.ElementTree, Mapping[Text, Text]]:
+        anafora_path: Text) -> tuple[ET.ElementTree, Mapping[Text, Text]]:
     # the overall view
     ls_view_elem = ET.Element('View', dict(style="display: flex;"))
 
@@ -160,7 +159,6 @@ def anafora_schema_to_labelstudio_schema(
 
 def anafora_annotations_to_labelstudio_annotations(
         anafora_path: Text,
-        labelstudio_path: Text,
         labelstudio_property_types: Mapping[Text, Text]) -> Mapping[Text, Any]:
     text_path, schema, annotator, status, xml = anafora_path.rsplit('.', 4)
     try:
@@ -191,46 +189,46 @@ def anafora_annotations_to_labelstudio_annotations(
                 tuple(int(offset) for offset in tuple(span_text.split(",")))
                 for span_text in an_elem.find("span").text.split(";")
             ]
-            # TODO: handle multiple spans
-            [(start, end)] = an_spans
-            ls_results.append({
-                "value": {
-                    "start": start,
-                    "end": end,
-                    "labels": [an_type],
-                },
-                "id": an_id,
-                "from_name": "type",
-                "to_name": "text",
-                "type": "labels"
-            })
-            for an_prop_elem in an_elem.find('properties'):
-                an_prop_name = an_prop_elem.tag
-                an_prop_value = an_prop_elem.text
-                if an_prop_value:
-                    ls_property_name = f"{an_type}-{an_prop_name}"
-                    ls_property_type = ls_types[ls_property_name]
-                    if ls_property_type == 'relation':
-                        ls_results.append({
-                            "from_id": an_id,
-                            "to_id": an_prop_value,
-                            "type": "relation",
-                            "labels": [an_prop_name],
-                        })
-                    else:
-                        ls_results.append({
-                            "value": {
-                                "start": start,
-                                "end": end,
-                                ls_type_to_value[ls_property_type]: [
-                                    an_prop_value
-                                ],
-                            },
-                            "id": an_id,
-                            "from_name": ls_property_name,
-                            "to_name": "text",
-                            "type": ls_property_type
-                        })
+            for i, (start, end) in enumerate(an_spans):
+                an_revised_id = an_id if i == 0 else f"{an_id}-{i}"
+                ls_results.append({
+                    "value": {
+                        "start": start,
+                        "end": end,
+                        "labels": [an_type],
+                    },
+                    "id": an_revised_id,
+                    "from_name": "type",
+                    "to_name": "text",
+                    "type": "labels"
+                })
+                for an_prop_elem in an_elem.find('properties'):
+                    an_prop_name = an_prop_elem.tag
+                    an_prop_value = an_prop_elem.text
+                    if an_prop_value:
+                        ls_property_name = f"{an_type}-{an_prop_name}"
+                        ls_property_type = ls_types[ls_property_name]
+                        if ls_property_type == 'relation':
+                            ls_results.append({
+                                "from_id": an_revised_id,
+                                "to_id": an_prop_value,
+                                "type": "relation",
+                                "labels": [an_prop_name],
+                            })
+                        else:
+                            ls_results.append({
+                                "value": {
+                                    "start": start,
+                                    "end": end,
+                                    ls_type_to_value[ls_property_type]: [
+                                        an_prop_value
+                                    ],
+                                },
+                                "id": an_revised_id,
+                                "from_name": ls_property_name,
+                                "to_name": "text",
+                                "type": ls_property_type
+                            })
 
         elif an_elem.tag == "relation":
             # TODO: handle Anafora relations
@@ -253,4 +251,5 @@ if __name__ == "__main__":
     parser.add_argument("labelstudio_path")
     parser.add_argument("--annotator", default="gold")
     parser.add_argument("--status", default="completed")
+    parser.add_argument("--project")
     anafora_to_labelstudio(**vars(parser.parse_args()))
