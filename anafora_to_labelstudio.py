@@ -185,7 +185,7 @@ def anafora_schema_to_labelstudio_schema(
     for an_relations_elem in an_root.iter('relations'):
         for an_relation_elem in an_relations_elem.iter('relation'):
             # TODO: parse relations
-            pass
+            raise NotImplementedError
 
     ls_tree = ET.ElementTree(ls_view_elem)
     return ls_tree, ls_property_types
@@ -259,13 +259,8 @@ def anafora_annotations_to_labelstudio_annotations(
                             })
 
         elif an_elem.tag == "relation":
-            an_prop_elem = an_elem.find('properties')
-            ls_results.append({
-                "from_id": an_prop_elem.find('Source').text,
-                "to_id": an_prop_elem.find('Target').text,
-                "type": "relation",
-                "labels": [an_prop_elem.find('Type').text],
-            })
+            # TODO: parse relations
+            raise NotImplementedError
         else:
             raise ValueError(f'unexpected element type: {an_elem.tag}')
 
