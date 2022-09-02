@@ -1,6 +1,7 @@
 import argparse
 import ast
 import json
+import logging
 import os
 import re
 from typing import Any, Text, Mapping
@@ -32,7 +33,7 @@ def anafora_to_labelstudio(
             an_schema_path = os.path.join(anafora_path, ".schema", an_schema_path)
             if os.path.exists(an_schema_path):
                 ls_tree, ls_property_types = anafora_schema_to_labelstudio_schema(
-                    anafora_path=an_schema_path,
+                    anafora_tree=ET.parse(an_schema_path),
                 )
                 ET.indent(ls_tree, space="  ", level=0)
                 ls_tree.write(f"{labelstudio_path}.{an_schema_name}.schema.xml")
@@ -45,8 +46,19 @@ def anafora_to_labelstudio(
                         for filename in filenames:
                             if an_filename_matcher.match(filename):
                                 print(filename)
+                                an_annotations_path = os.path.join(
+                                    anafora_path, dirpath, filename)
+                                text_path, _, _, _, _ = an_annotations_path.rsplit(
+                                    '.', 4)
+                                if not os.path.exists(text_path):
+                                    logging.warning(f"Skipping file because text file is missing:\n{an_annotations_path}")
+                                    continue
+                                with open(text_path) as text_file:
+                                    text = text_file.read()
                                 ls_data.append(anafora_annotations_to_labelstudio_annotations(
-                                    anafora_path=os.path.join(anafora_path, dirpath, filename),
+                                    anafora_tree=ET.parse(an_annotations_path),
+                                    text=text,
+                                    source=os.path.basename(text_path),
                                     labelstudio_property_types=ls_property_types,
                                 ))
 
@@ -55,7 +67,7 @@ def anafora_to_labelstudio(
 
 
 def anafora_schema_to_labelstudio_schema(
-        anafora_path: Text) -> tuple[ET.ElementTree, Mapping[Text, Text]]:
+        anafora_tree: ET.ElementTree) -> tuple[ET.ElementTree, Mapping[Text, Text]]:
     # the overall view
     ls_view_elem = ET.Element('View', dict(style="display: flex;"))
 
@@ -76,8 +88,7 @@ def anafora_schema_to_labelstudio_schema(
     ls_attrib_view_elem = ET.SubElement(ls_view_elem, 'View', dict(
         style="flex: 20%"))
 
-    an_tree = ET.parse(anafora_path)
-    an_root = an_tree.getroot()
+    an_root = anafora_tree.getroot()
     default_attributes = dict(required=False)
     for an_defaults_elem in an_root.iter("defaultattribute"):
         for elem in an_defaults_elem:
@@ -158,22 +169,16 @@ def anafora_schema_to_labelstudio_schema(
 
 
 def anafora_annotations_to_labelstudio_annotations(
-        anafora_path: Text,
+        anafora_tree: ET.ElementTree,
+        text: Text,
+        source: Text,
         labelstudio_property_types: Mapping[Text, Text]) -> Mapping[Text, Any]:
-    text_path, schema, annotator, status, xml = anafora_path.rsplit('.', 4)
-    try:
-        with open(text_path) as text_file:
-            text = text_file.read()
-    except FileNotFoundError as e:
-        text = None
-        print(f"WARNING: {e}")
     ls_types = labelstudio_property_types
     ls_type_to_value = {"textarea": "text", "choices": "choices"}
     ls_results = []
-    ls_meta_info = {"source": os.path.basename(text_path)}
+    ls_meta_info = {"source": source}
 
-    an_tree = ET.parse(anafora_path)
-    an_root = an_tree.getroot()
+    an_root = anafora_tree.getroot()
     an_info_elem = an_root.find('info')
     for an_elem in an_info_elem:
         ls_meta_info[an_elem.tag] = an_elem.text
