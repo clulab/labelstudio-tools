@@ -8,6 +8,37 @@ from typing import Any, Text, Mapping
 import xml.etree.cElementTree as ET
 
 
+def _iter_schemas(anafora_setting: ET.Element):
+    for an_schema_elem in anafora_setting.findall("./schemas/schema"):
+        an_schema_name = an_schema_elem.attrib["name"]
+
+        # the <file> may be listed directly
+        an_schema_path = an_schema_elem.findtext("file")
+        if an_schema_path:
+            yield an_schema_name, an_schema_path
+
+        # or there may be <mode>s, each with their own <file>
+        for an_mode_elem in an_schema_elem.iter('mode'):
+            an_mode_name = an_mode_elem.attrib["name"]
+            an_schema_path = an_mode_elem.find("file").text
+            yield f"{an_schema_name}-{an_mode_name}", an_schema_path
+
+
+def _iter_anafora_annotation_paths(
+        anafora_path: Text,
+        schema: Text,
+        annotator: Text,
+        status: Text,
+        project: Text):
+    an_filename_matcher = re.compile(
+        f".*[.]{schema}[.]{annotator}[.]{status}[.]xml")
+    for dirpath, dirnames, filenames in os.walk(anafora_path):
+        if project is None or project in dirpath:
+            for filename in filenames:
+                if an_filename_matcher.match(filename):
+                    yield os.path.join(anafora_path, dirpath, filename)
+
+
 def anafora_to_labelstudio(
         anafora_path: Text,
         labelstudio_path: Text,
@@ -15,55 +46,42 @@ def anafora_to_labelstudio(
         status: Text,
         project: Text):
 
+    # iterate over the <schema> elements
     an_setting_tree = ET.parse(os.path.join(anafora_path, ".setting.xml"))
-    an_setting_root = an_setting_tree.getroot()
-    for an_schema_elem in an_setting_root.findall("./schemas/schema"):
-        an_schema_name = an_schema_elem.attrib["name"]
-        an_schema_named_paths = []
-        an_schema_path = an_schema_elem.findtext("file")
-        if an_schema_path:
-            an_schema_named_paths.append((an_schema_name, an_schema_path))
-        for an_mode_elem in an_schema_elem.iter('mode'):
-            an_mode_name = an_mode_elem.attrib["name"]
-            an_schema_path = an_mode_elem.find("file").text
-            an_mode_name = f"{an_schema_name}-{an_mode_name}"
-            an_schema_named_paths.append((an_mode_name, an_schema_path))
+    for an_schema_name, an_schema_path in _iter_schemas(an_setting_tree.getroot()):
+        an_schema_path = os.path.join(anafora_path, ".schema", an_schema_path)
+        if os.path.exists(an_schema_path):
+            ls_tree, ls_property_types = anafora_schema_to_labelstudio_schema(
+                anafora_tree=ET.parse(an_schema_path),
+            )
+            ET.indent(ls_tree, space="  ", level=0)
+            ls_tree.write(f"{labelstudio_path}.{an_schema_name}.schema.xml")
 
-        for an_name, an_schema_path in an_schema_named_paths:
-            an_schema_path = os.path.join(anafora_path, ".schema", an_schema_path)
-            if os.path.exists(an_schema_path):
-                ls_tree, ls_property_types = anafora_schema_to_labelstudio_schema(
-                    anafora_tree=ET.parse(an_schema_path),
-                )
-                ET.indent(ls_tree, space="  ", level=0)
-                ls_tree.write(f"{labelstudio_path}.{an_schema_name}.schema.xml")
+            ls_data = []
+            for an_annotations_path in _iter_anafora_annotation_paths(
+                    anafora_path=anafora_path,
+                    schema=an_schema_name,
+                    annotator=annotator,
+                    status=status,
+                    project=project):
+                logging.info(f"Processing {an_annotations_path}")
+                text_path, _, _, _, _ = an_annotations_path.rsplit('.', 4)
+                if not os.path.exists(text_path):
+                    logging.warning(f"Skipping file because text file is "
+                                    f"missing:\n{an_annotations_path}")
+                    continue
+                with open(text_path) as text_file:
+                    text = text_file.read()
+                ls_data.append(anafora_annotations_to_labelstudio_annotations(
+                    anafora_tree=ET.parse(an_annotations_path),
+                    text=text,
+                    source=os.path.basename(text_path),
+                    labelstudio_property_types=ls_property_types,
+                ))
 
-                ls_data = []
-                an_filename_matcher = re.compile(
-                    f".*[.]{an_schema_name}[.]{annotator}[.]{status}[.]xml")
-                for dirpath, dirnames, filenames in os.walk(anafora_path):
-                    if project is None or project in dirpath:
-                        for filename in filenames:
-                            if an_filename_matcher.match(filename):
-                                print(filename)
-                                an_annotations_path = os.path.join(
-                                    anafora_path, dirpath, filename)
-                                text_path, _, _, _, _ = an_annotations_path.rsplit(
-                                    '.', 4)
-                                if not os.path.exists(text_path):
-                                    logging.warning(f"Skipping file because text file is missing:\n{an_annotations_path}")
-                                    continue
-                                with open(text_path) as text_file:
-                                    text = text_file.read()
-                                ls_data.append(anafora_annotations_to_labelstudio_annotations(
-                                    anafora_tree=ET.parse(an_annotations_path),
-                                    text=text,
-                                    source=os.path.basename(text_path),
-                                    labelstudio_property_types=ls_property_types,
-                                ))
-
-                with open(f"{labelstudio_path}.{an_schema_name}.data.json", 'w') as labelstudio_file:
-                    json.dump(ls_data, labelstudio_file, indent=4)
+            ls_output_path = f"{labelstudio_path}.{an_schema_name}.data.json"
+            with open(ls_output_path, 'w') as labelstudio_file:
+                json.dump(ls_data, labelstudio_file, indent=4)
 
 
 def anafora_schema_to_labelstudio_schema(
