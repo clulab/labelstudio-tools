@@ -8,20 +8,21 @@ from typing import Any, Text, Mapping
 import xml.etree.cElementTree as ET
 
 
-def _iter_schemas(anafora_setting: ET.Element):
+def _iter_schemas(anafora_setting: ET.Element, schema_name=None):
     for an_schema_elem in anafora_setting.findall("./schemas/schema"):
         an_schema_name = an_schema_elem.attrib["name"]
+        if schema_name is None or schema_name == an_schema_name:
 
-        # the <file> may be listed directly
-        an_schema_path = an_schema_elem.findtext("file")
-        if an_schema_path:
-            yield an_schema_name, an_schema_path
+            # the <file> may be listed directly
+            an_schema_path = an_schema_elem.findtext("file")
+            if an_schema_path:
+                yield an_schema_name, an_schema_path
 
-        # or there may be <mode>s, each with their own <file>
-        for an_mode_elem in an_schema_elem.iter('mode'):
-            an_mode_name = an_mode_elem.attrib["name"]
-            an_schema_path = an_mode_elem.find("file").text
-            yield f"{an_schema_name}-{an_mode_name}", an_schema_path
+            # or there may be <mode>s, each with their own <file>
+            for an_mode_elem in an_schema_elem.iter('mode'):
+                an_mode_name = an_mode_elem.attrib["name"]
+                an_schema_path = an_mode_elem.find("file").text
+                yield f"{an_schema_name}-{an_mode_name}", an_schema_path
 
 
 def _iter_anafora_annotation_paths(
@@ -44,11 +45,14 @@ def anafora_to_labelstudio(
         labelstudio_path: Text,
         annotator: Text,
         status: Text,
-        project: Text):
+        project: Text,
+        schema: Text):
 
     # iterate over the <schema> elements
     an_setting_tree = ET.parse(os.path.join(anafora_path, ".setting.xml"))
-    for an_schema_name, an_schema_path in _iter_schemas(an_setting_tree.getroot()):
+    for an_schema_name, an_schema_path in _iter_schemas(
+            anafora_setting=an_setting_tree.getroot(),
+            schema_name=schema):
         an_schema_path = os.path.join(anafora_path, ".schema", an_schema_path)
         if os.path.exists(an_schema_path):
             ls_tree, ls_property_types = anafora_schema_to_labelstudio_schema(
@@ -280,4 +284,5 @@ if __name__ == "__main__":
     parser.add_argument("--annotator", default="gold")
     parser.add_argument("--status", default="completed")
     parser.add_argument("--project")
+    parser.add_argument("--schema")
     anafora_to_labelstudio(**vars(parser.parse_args()))
