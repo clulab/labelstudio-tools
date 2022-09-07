@@ -1,5 +1,6 @@
 import argparse
 import ast
+import itertools
 import json
 import logging
 import os
@@ -11,18 +12,20 @@ import xml.etree.cElementTree as ET
 def _iter_schemas(anafora_setting: ET.Element, schema_name=None):
     for an_schema_elem in anafora_setting.findall("./schemas/schema"):
         an_schema_name = an_schema_elem.attrib["name"]
-        if schema_name is None or schema_name == an_schema_name:
 
-            # the <file> may be listed directly
+        # the <file> may be listed directly
+        if schema_name is None or schema_name == an_schema_name:
             an_schema_path = an_schema_elem.findtext("file")
             if an_schema_path:
                 yield an_schema_name, an_schema_path
 
-            # or there may be <mode>s, each with their own <file>
-            for an_mode_elem in an_schema_elem.iter('mode'):
-                an_mode_name = an_mode_elem.attrib["name"]
-                an_schema_path = an_mode_elem.find("file").text
-                yield f"{an_schema_name}-{an_mode_name}", an_schema_path
+        # or there may be <mode>s, each with their own <file>
+        for an_mode_elem in an_schema_elem.iter('mode'):
+            an_mode_name = an_mode_elem.attrib["name"]
+            an_schema_path = an_mode_elem.find("file").text
+            an_schema_mode_name = f"{an_schema_name}-{an_mode_name}"
+            if schema_name is None or schema_name == an_schema_mode_name:
+                yield an_schema_mode_name, an_schema_path
 
 
 def _iter_anafora_annotation_paths(
@@ -187,10 +190,40 @@ def anafora_schema_to_labelstudio_schema(
                     raise ValueError(f'unexpected input_type: {property_input}')
 
     for an_relations_elem in an_root.iter('relations'):
+        relations_type = an_relations_elem.attrib["type"]
         for an_relation_elem in an_relations_elem.iter('relation'):
-            # TODO: parse relations
-            raise NotImplementedError
+            relation_type = an_relation_elem.attrib["type"]
+            argument_types = []
+            relation_subtypes = []
+            for an_property_elem in an_relation_elem.iter('property'):
+                property_type = an_property_elem.attrib["type"]
+                property_input = an_property_elem.attrib["input"]
+                ls_property_name = f"{relation_type}-{property_type}"
+                if property_input == "choice":
+                    relation_subtypes.append([
+                        f"{property_type}={value}"
+                        for value in an_property_elem.text.split(',')])
+                    ls_property_types[ls_property_name] = 'choices'
+                elif property_input == "list":
+                    ls_property_types[ls_property_name] = 'relation'
+                    argument_types.append(property_type)
+                else:
+                    raise ValueError(f'unexpected input_type: {property_input}')
 
+            source_type = argument_types[0]
+            for argument_type in argument_types[1:]:
+                if not relation_subtypes:
+                    relation_strings = [f"{relation_type}:{source_type}:"
+                                        f"{argument_type}"]
+                else:
+                    relation_strings = [
+                        f"{relation_type}:{':'.join(subtypes)}:{source_type}:"
+                        f"{argument_type}"
+                        for subtypes in itertools.product(*relation_subtypes)
+                    ]
+                for relation_string in relation_strings:
+                    ET.SubElement(ls_relations_elem, 'Relation', dict(
+                        value=relation_string))
     ls_tree = ET.ElementTree(ls_view_elem)
     return ls_tree, ls_property_types
 
@@ -263,8 +296,35 @@ def anafora_annotations_to_labelstudio_annotations(
                             })
 
         elif an_elem.tag == "relation":
-            # TODO: parse relations
-            raise NotImplementedError
+            choices_elems = []
+            relations_elems = []
+            for an_prop_elem in an_elem.find('properties'):
+                ls_property_type = labelstudio_property_types[f"{an_type}-{an_prop_elem.tag}"]
+                if ls_property_type == "choices":
+                    choices_elems.append(an_prop_elem)
+                elif ls_property_type == "relation":
+                    relations_elems.append(an_prop_elem)
+                else:
+                    raise ValueError(f'unexpected property type: {ls_property_type}')
+
+            relation_string = an_type
+            for an_prop_elem in choices_elems:
+                relation_string += f":{an_prop_elem.tag}={an_prop_elem.text}"
+
+            ls_source_id = relations_elems[0].text
+            ls_source_type = relations_elems[0].tag
+            for an_prop_elem in relations_elems[1:]:
+                ls_target_id = an_prop_elem.text
+                ls_target_type = an_prop_elem.tag
+                ls_results.append({
+                    "from_id": ls_source_id,
+                    "to_id": ls_target_id,
+                    "type": "relation",
+                    "from_name": "",
+                    "labels": [
+                        f"{relation_string}:{ls_source_type}:{ls_target_type}"
+                    ]
+                })
         else:
             raise ValueError(f'unexpected element type: {an_elem.tag}')
 
